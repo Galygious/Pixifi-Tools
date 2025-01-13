@@ -6,6 +6,7 @@
 // @version      1.0
 // @description  A standalone script that registers a Lead/Client search tool with the Master Tools window.
 // @downloadURL  https://github.com/Galygious/Pixifi-Tools/blob/main/PixifiMaster-SearchTool.user.js
+// @updateURL  https://github.com/Galygious/Pixifi-Tools/blob/main/PixifiMaster-SearchTool.user.js
 // @match        https://www.pixifi.com/admin/*
 // @grant        none
 // ==/UserScript==
