@@ -4,7 +4,7 @@
 // @namespace    http://tampermonkey.net/
 // @version      1.2
 // @description  Creates a single draggable window for tools. Other scripts can register their tools here.
-// @downloadURL  https://github.com/Galygious/Pixifi-Tools/edit/main/MasterTools.user.js
+// @downloadURL  https://github.com/Galygious/Pixifi-Tools/blob/main/MasterTools.user.js
 // @match        https://www.pixifi.com/admin/*
 // @grant        none
 // ==/UserScript==
