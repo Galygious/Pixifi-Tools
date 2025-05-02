@@ -247,4 +247,4 @@
     delay,
     executeWorkflow,
   };
-})(unsafeWindow || window);
+})(typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
