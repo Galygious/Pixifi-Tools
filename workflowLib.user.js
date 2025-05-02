@@ -211,9 +211,39 @@
     return ctx.vars;
   }
 
-  // convenience wrappers
-  async function waitVisible(selector, opts={}) { return waitForElement(selector, { visible:true, ...opts}); }
-  async function waitHidden(selector, opts={}) { return waitForElement(selector, { visible:false, ...opts}); }
+  // convenience wrappers operating in current context/tab
+  async function waitVisible(selector, timeout=15000) {
+    if (activeTabId == null) return waitForElement(selector, { visible: true, timeout });
+    return waitVisibleInTab(activeTabId, selector, timeout);
+  }
+
+  async function waitHidden(selector, timeout=15000) {
+    if (activeTabId == null) return waitForElement(selector, { visible: false, timeout });
+    // simple polling for hidden element
+    const t0 = performance.now();
+    while (performance.now() - t0 < timeout) {
+      const res = await remoteEval(activeTabId, `return document.querySelector(${JSON.stringify(selector)}) === null;`);
+      if (res) return true;
+      await delay(200);
+    }
+    throw new Error('waitHidden timeout: ' + selector);
+  }
+
+  async function getText(selector) {
+    if (activeTabId == null) {
+      const el = await waitForElement(selector, { visible:false });
+      return el.textContent.trim();
+    }
+    return remoteEval(activeTabId, `return document.querySelector(${JSON.stringify(selector)}).textContent.trim();`);
+  }
+
+  async function getAttr(selector, attr) {
+    if (activeTabId == null) {
+      const el = await waitForElement(selector, { visible:false });
+      return el.getAttribute(attr);
+    }
+    return remoteEval(activeTabId, `return document.querySelector(${JSON.stringify(selector)}).getAttribute(${JSON.stringify(attr)});`);
+  }
 
   // Override switch functions to set context
   const origSwitchUrl = switchToTabUrl;
@@ -246,5 +276,7 @@
     vars,
     delay,
     executeWorkflow,
+    getText,
+    getAttr,
   };
 })(typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
