@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         workflowLib
 // @namespace    http://tampermonkey.net/
-// @version      2025-05-02
+// @version      2025-05-02-v2
 // @description  try to take over the world!
 // @author       You
 // @match        *://*/*
