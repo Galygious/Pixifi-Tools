@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         workflowLib
 // @namespace    http://tampermonkey.net/
-// @version      2025-05-02-v2
+// @version      2025-05-02-v3
 // @description  try to take over the world!
 // @author       You
 // @match        *://*/*
@@ -166,10 +166,16 @@
     return ctx.vars;
   }
 
+  // convenience wrappers
+  async function waitVisible(selector, opts={}) { return waitForElement(selector, { visible:true, ...opts}); }
+  async function waitHidden(selector, opts={}) { return waitForElement(selector, { visible:false, ...opts}); }
+
   /* ------------------------------------------------- export */
   root.WF = {
     bridge,
     waitForElement,
+    waitVisible,
+    waitHidden,
     openOrFocusTab,
     switchToTabUrl,
     switchToTabId,
