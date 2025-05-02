@@ -144,8 +144,20 @@
     return str.replace(/\$\{?(\w+)\}?/g, (_, k) => vars[k] ?? '');
   }
 
+  const vars = {};
+
+  async function getUrl(varName) {
+    const url = location.href;
+    if (varName) vars[varName] = url;
+    return url;
+  }
+
+  async function openTab(url) {
+    return openOrFocusTab(url);
+  }
+
   async function executeWorkflow(steps) {
-    const ctx = { vars: {} };
+    const ctx = { vars };
     for (const step of steps) {
       const action = ACTIONS[step.type];
       if (!action) throw new Error('Unknown step type: ' + step.type);
@@ -162,6 +174,9 @@
     switchToTabUrl,
     switchToTabId,
     getTabId,
+    getUrl,
+    openTab,
+    vars,
     delay,
     executeWorkflow,
   };
