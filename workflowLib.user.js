@@ -5,7 +5,7 @@
 // @description  try to take over the world!
 // @author       You
 // @match        *://*/*
-// @grant        none
+// @grant        unsafeWindow
 // ==/UserScript==
 
 // workflowLib.js
