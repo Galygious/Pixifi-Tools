@@ -145,6 +145,30 @@
   }
 
   const vars = {};
+  let activeTabId = null; // if set, DOM helpers execute in that tab
+
+  function setActiveTab(id) {
+    activeTabId = id;
+  }
+
+  // Utility to run a function (as string) in proper context and return result
+  async function runInContext(codeStr) {
+    if (activeTabId == null) {
+      // local evaluation
+      // eslint-disable-next-line no-new-func
+      return (new Function(codeStr))();
+    }
+    return remoteEval(activeTabId, `return (${codeStr})();`);
+  }
+
+  // Helper for selectors
+  async function elemInContext(selector, ensureVisible = false) {
+    if (activeTabId == null) {
+      return waitForElement(selector, { visible: ensureVisible });
+    }
+    await waitVisibleInTab(activeTabId, selector);
+    return remoteEval(activeTabId, `return document.querySelector(${JSON.stringify(selector)}).outerHTML;`);
+  }
 
   async function getUrl(varName) {
     const url = location.href;
@@ -153,7 +177,28 @@
   }
 
   async function openTab(url) {
-    return openOrFocusTab(url);
+    const id = await openOrFocusTab(url);
+    setActiveTab(id);
+    return id;
+  }
+
+  async function remoteEval(tabId, code, args = []) {
+    const res = await bridge({ type: 'remoteEval', tabId, code, args });
+    if (res?.error) throw new Error(res.error);
+    return res.result;
+  }
+
+  async function waitVisibleInTab(tabId, selector, timeout = 15000) {
+    const t0 = performance.now();
+    while (performance.now() - t0 < timeout) {
+      const found = await remoteEval(
+        tabId,
+        `return document.querySelector(${JSON.stringify(selector)}) !== null;`
+      );
+      if (found) return true;
+      await delay(200);
+    }
+    throw new Error('waitVisibleInTab timeout: ' + selector);
   }
 
   async function executeWorkflow(steps) {
@@ -170,6 +215,20 @@
   async function waitVisible(selector, opts={}) { return waitForElement(selector, { visible:true, ...opts}); }
   async function waitHidden(selector, opts={}) { return waitForElement(selector, { visible:false, ...opts}); }
 
+  // Override switch functions to set context
+  const origSwitchUrl = switchToTabUrl;
+  switchToTabUrl = async (url) => {
+    const id = await origSwitchUrl(url);
+    setActiveTab(id);
+    return id;
+  };
+
+  const origSwitchId = switchToTabId;
+  switchToTabId = async (id) => {
+    await origSwitchId(id);
+    setActiveTab(id);
+  };
+
   /* ------------------------------------------------- export */
   root.WF = {
     bridge,
@@ -182,6 +241,8 @@
     getTabId,
     getUrl,
     openTab,
+    remoteEval,
+    waitVisibleInTab,
     vars,
     delay,
     executeWorkflow,
